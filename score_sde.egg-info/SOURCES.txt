@@ -1,0 +1,11 @@
+README.md
+setup.py
+op/__init__.py
+op/upfirdn2d.cpp
+op/upfirdn2d.py
+op/upfirdn2d_kernel.cu
+score_sde.egg-info/PKG-INFO
+score_sde.egg-info/SOURCES.txt
+score_sde.egg-info/dependency_links.txt
+score_sde.egg-info/requires.txt
+score_sde.egg-info/top_level.txt

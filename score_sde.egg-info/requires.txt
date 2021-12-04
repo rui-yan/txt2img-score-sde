@@ -1,0 +1,6 @@
+torch
+numpy
+ninja
+ml_collections
+albumentations
+opencv-python
