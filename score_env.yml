@@ -141,6 +141,7 @@ dependencies:
     - astunparse==1.6.3
     - beautifulsoup4==4.10.0
     - cachetools==4.2.4
+    - captioning==0.0.1
     - chex==0.1.0
     - cityscapesscripts==2.2.0
     - click==8.0.3
