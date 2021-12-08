@@ -1,6 +1,7 @@
 # txt2img-score-sde
 
-CS236 Final Project (Autumn 2022)
+CS236 Final Project (Autumn 2021)
+
 Contributors: Rui Yan, Wenna Qin, Yixing Wang
 
 This repository contains the code for text-to-image generation via score-based model.
