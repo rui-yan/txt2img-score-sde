@@ -15,10 +15,6 @@ import time
 import sampling
 from torchvision.utils import make_grid, save_image
 from text2image.text2image import get_text2image_sampler
-# from semantic_synthesis.semantic_synthesis import get_semantic_synthesis_sampler
-# from semantic_synthesis.models.unet.unet import UNet
-# import datasets.cityscapes256.cityscapes256 as cityscapes256
-# import datasets.flickr.flickr as flickr
 
 import sys
 sys.path.append('/home/yan/score-sde/text2image/image_captioning/ImageCaptioning.pytorch')
@@ -26,6 +22,7 @@ sys.path.append('/home/yan/score-sde/text2image/image_captioning/ImageCaptioning
 import captioning
 import captioning.utils.misc
 import captioning.models
+import pdb
 
 
 def train(config, workdir):
@@ -148,7 +145,6 @@ def train(config, workdir):
 def text2image(config, workdir, mode):
     # Get checkpoint dir
     checkpoint_dir = '/home/yan/score-sde/score_sde_pytorch/exp/ve/cifar10_ncsnpp'
-    # checkpoint_dir = os.path.join(workdir, 'checkpoints')
     
     # Create directory to sample_folder
     sample_dir = os.path.join(workdir, 'img_sample')
@@ -157,7 +153,6 @@ def text2image(config, workdir, mode):
     # Load score model from latest checkpoint
     score_model = NCSNpp(config)
     score_model = score_model.to(config.device)
-    # score_model = torch.nn.DataParallel(score_model)
     ema = ExponentialMovingAverage(score_model.parameters(), decay=config.model.ema_rate)
     utils.restore_checkpoint(None, score_model, ema, os.path.join(checkpoint_dir, 'checkpoint_16.pth'))
     ema.copy_to(score_model.parameters())
@@ -168,7 +163,6 @@ def text2image(config, workdir, mode):
     infos['opt'].vocab = infos['vocab']
     img_cap_model = captioning.models.setup(infos['opt'])
     img_cap_model = img_cap_model.to(config.device)
-    # img_cap_model = torch.nn.DataParallel(img_cap_model)
     img_cap_model.load_state_dict(torch.load('/home/yan/score-sde/text2image/image_captioning/model-best.pth'))
     
     logging.info('Image Captioning Model loaded')
@@ -182,11 +176,9 @@ def text2image(config, workdir, mode):
         data_loader_sample = data_loader.get_img2txt_sample_data(config)
         logging.info('Sample data loaded')
         
-        for i, (img, target, file_name) in enumerate(data_loader_sample):
-        # for i, (img, target, im_scale, file_name) in enumerate(data_loader_sample):
-            print("img.shape: ", img.shape)
-            # print("im_scale: ", im_scale)
-            img, target = img.to(config.device), target.to(config.device, dtype=torch.float32)
+        f = open(os.path.join(sample_dir, "caption.txt"), "w")
+        for i, (img, target, caption_text, file_name) in enumerate(data_loader_sample):
+            img, target = img.to(config.device), target.to(config.device)
             file_name = ''.join(file_name)
             
             # Get sampling function
@@ -195,10 +187,15 @@ def text2image(config, workdir, mode):
             
             nrow = int(np.sqrt(samples.shape[0]))
             image_grid = make_grid(samples, nrow, padding=2, normalize=True) # samples
-            save_image(image_grid, os.path.join(sample_dir, file_name + '_sample_0.000025_0.7_0.4_8labels_1000steps.png'))
+            save_image(image_grid, os.path.join(sample_dir, file_name + '_sample_1000steps.png'))
             save_image(img, os.path.join(sample_dir, file_name + '_original.png'))
-
+            
+            f.write(caption_text[0])
+            f.write("\n")
+            
             logging.info(f'Generated sample {i + 1} of {len(data_loader_sample)}')
+        f.close()
+    
     elif mode == 'uncond':
         sampling_shape = (config.sampling.batch_size, 3, 32, 32)
         sampling_fn = sampling.get_sampling_fn(config, sde, sampling_shape, config.model.sampling_eps)
